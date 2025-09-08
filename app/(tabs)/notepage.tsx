@@ -1,6 +1,6 @@
-import HeaderComponent from "@/components/HeaderComponent";
-import SearchBarComponent from "@/components/SearchBarComponent";
+import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "expo-router";
+
 import {
   Text,
   View,
@@ -8,54 +8,56 @@ import {
   StyleSheet,
   FlatList,
 } from "react-native";
+
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { deleteNote } from "@/redux/noteSlice";
+import HeaderComponent from "@/components/HeaderComponent";
+import SearchBarComponent from "@/components/SearchBarComponent";
 export default function notepage() {
   const dispatch = useDispatch();
   const router = useRouter();
   const { notes, searchTerm } = useSelector((state: RootState) => state.notes);
+  //filter for searching
   const filteredNotes = notes.filter(
     (note) =>
       note.title.toLowerCase().includes(searchTerm.toLocaleLowerCase()) ||
       note.content.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  //note deletion handler
   const handleDeleteNote = (id: string) => {
     dispatch(deleteNote(id));
   };
+  //render Notes
   const renderNote = ({
     item,
   }: {
     item: { id: string; title: string; content: string };
   }) => (
     <View>
-      <Text style={styles.noteTitle}>{item.title}</Text>
-      <View style={styles.noteButtons}>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() =>
-            router.push({
-              pathname: "/(tabs)/adnotes",
-              params: { isEdit: "true", noteId: item.id },
-            })
-          }
-        >
-          {/* <IconSymbol color="white" name="arrow.backward" /> */}
-          <Text style={styles.editText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => handleDeleteNote(item.id)}
-        >
-          {/* <IconSymbol color="white" name="information" /> */}
-          <Text style={styles.deleteText}>delete</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        style={styles.noteItem}
+        onPress={() =>
+          router.push({
+            pathname: "/(tabs)/adnotes",
+            params: { isEdit: "true", noteId: item.id },
+          })
+        }
+      >
+        <Text style={styles.noteTitle}>{item.title}</Text>
+        <View style={styles.noteButtons}>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleDeleteNote(item.id)}
+          >
+            <Text style={styles.deleteText}>delete</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
     </View>
   );
   return (
-    <View>
+    <View style={styles.container}>
       <HeaderComponent />
       <SearchBarComponent />
       <FlatList
@@ -75,7 +77,6 @@ export default function notepage() {
           })
         }
       >
-        {/* <Text style={styles.editText}>add</Text> */}
         <IconSymbol name="plus" size={24} color="#fff" />
       </TouchableOpacity>
     </View>
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     position: "absolute",
-    bottom: 20,
+    bottom: 100,
     right: 20,
     backgroundColor: "#007bff",
     width: 56,

@@ -1,6 +1,7 @@
-import { addNote, editNote } from "@/redux/noteSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
+
 import {
   Text,
   View,
@@ -8,25 +9,30 @@ import {
   StyleSheet,
   TextInput,
 } from "react-native";
-import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useDispatch, useSelector } from "react-redux";
+
 import { RootState } from "@/redux/store";
+import { addNote, editNote } from "@/redux/noteSlice";
+
+import { IconSymbol } from "@/components/ui/IconSymbol";
+
 export default function AddNoteScreen() {
   const router = useRouter();
-
+  //get params
   const { isEdit, noteId } = useLocalSearchParams<{
     isEdit?: string;
     noteId?: string;
   }>();
   const editing = isEdit === "true";
 
+  //states
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [count, setCount] = useState(0);
-
+  //find specific note (for Edit)
   const note = useSelector((state: RootState) =>
     state.notes.notes.find((n) => n.id === noteId)
   );
+  //show title and content (if isEdit)
   useEffect(() => {
     if (editing && note) {
       setTitle(note.title);
@@ -36,7 +42,9 @@ export default function AddNoteScreen() {
       setContent("");
     }
   }, [note]);
+  //
   const dispatch = useDispatch();
+  //Note saving handler
   const handleSaveNote = () => {
     if (editing && noteId) {
       const editedNote = {
@@ -63,9 +71,7 @@ export default function AddNoteScreen() {
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <IconSymbol color="black" size={40} name="arrow.backward" />
       </TouchableOpacity>
-      <Text style={styles.header}>
-        {editing ? "Edit Note" : "Add new Note"}
-      </Text>
+      <Text style={styles.header}>{editing ? "" : "Add new Note"}</Text>
       <TextInput
         style={styles.input}
         placeholder="Title"
