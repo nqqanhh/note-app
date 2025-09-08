@@ -8,12 +8,14 @@ import {
   TouchableOpacity,
   StyleSheet,
   TextInput,
+  Alert,
 } from "react-native";
 
 import { RootState } from "@/redux/store";
 import { addNote, editNote } from "@/redux/noteSlice";
 
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import AntDesign from "@expo/vector-icons/AntDesign";
 
 export default function AddNoteScreen() {
   const COLORS = [
@@ -27,6 +29,45 @@ export default function AddNoteScreen() {
   function getRandomColor() {
     return COLORS[Math.floor(Math.random() * COLORS.length)];
   }
+  //
+  const showConfirmationAlert = () => {
+    Alert.alert(
+      "Confirmation",
+      "Are you sure you want to proceed?",
+      [
+        {
+          text: "Discard",
+          onPress: showDiscardAlert,
+          style: "cancel",
+        },
+        {
+          text: "Save",
+          onPress: handleSaveNote,
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const showDiscardAlert = () => {
+    Alert.alert(
+      "Confirmation",
+      "Are you sure you want to discard your changes?",
+      [
+        {
+          text: "Discard",
+          onPress: handleDiscard,
+          style: "cancel",
+        },
+        {
+          text: "Keep",
+          onPress: () => console.log("OK Pressed"),
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+  //
   const router = useRouter();
   //get params
   const { isEdit, noteId } = useLocalSearchParams<{
@@ -38,6 +79,8 @@ export default function AddNoteScreen() {
   //states
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [oldTitle, setOldTitle] = useState("");
+  const [oldContent, setOldContent] = useState("");
   const [count, setCount] = useState(0);
   //find specific note (for Edit)
   const note = useSelector((state: RootState) =>
@@ -47,7 +90,9 @@ export default function AddNoteScreen() {
   useEffect(() => {
     if (editing && note) {
       setTitle(note.title);
+      setOldTitle(note.title);
       setContent(note.content);
+      setOldContent(note.content);
     } else {
       setTitle("");
       setContent("");
@@ -79,6 +124,11 @@ export default function AddNoteScreen() {
     }
     router.back();
   };
+  const handleDiscard = () => {
+    setTitle(oldTitle);
+    setContent(oldContent);
+    router.back();
+  };
   return (
     <View>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
@@ -99,10 +149,11 @@ export default function AddNoteScreen() {
         onChangeText={setContent}
         placeholderTextColor="#888"
       />
-      <TouchableOpacity style={styles.saveButton} onPress={handleSaveNote}>
-        <Text style={styles.saveText}>
-          {editing ? "Update Note" : "Save Note"}
-        </Text>
+      <TouchableOpacity
+        style={styles.saveButton}
+        onPress={showConfirmationAlert}
+      >
+        <AntDesign name="save" size={24} color="white" />{" "}
       </TouchableOpacity>
     </View>
   );
@@ -140,7 +191,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   saveButton: {
-    backgroundColor: "#007bff",
+    position: "absolute",
+    top: 55,
+    right: 12,
+    backgroundColor: "#3B3B3B",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
