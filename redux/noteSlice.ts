@@ -9,11 +9,15 @@ interface Note {
 interface NoteState {
   notes: Note[];
   searchTerm: string;
+  isEdit: boolean;
+  editingNoteId?: string | null;
 }
 
 const initialState: NoteState = {
   notes: [],
   searchTerm: "",
+  isEdit: false,
+  editingNoteId: null,
 };
 
 const noteSlice = createSlice({
@@ -30,6 +34,8 @@ const noteSlice = createSlice({
       if (index !== -1) {
         state.notes[index] = action.payload;
       }
+      state.isEdit = false;
+      state.editingNoteId = null;
     },
     deleteNote: (state, action: PayloadAction<string>) => {
       state.notes = state.notes.filter((note) => note.id !== action.payload);
@@ -37,9 +43,16 @@ const noteSlice = createSlice({
     setSearchNote: (state, action: PayloadAction<string>) => {
       state.searchTerm = action.payload;
     },
+    isEditNote: (
+      state,
+      action: PayloadAction<{ value: boolean; noteId?: string }>
+    ) => {
+      state.isEdit = action.payload.value;
+      state.editingNoteId = action.payload.noteId ?? null;
+    },
   },
 });
 
-export const { addNote, editNote, deleteNote, setSearchNote } =
+export const { addNote, editNote, deleteNote, setSearchNote, isEditNote } =
   noteSlice.actions;
 export default noteSlice.reducer;

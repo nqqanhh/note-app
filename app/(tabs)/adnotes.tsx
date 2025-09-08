@@ -1,6 +1,6 @@
-import { addNote } from "@/redux/noteSlice";
+import { addNote, editNote } from "@/redux/noteSlice";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Text,
   View,
@@ -9,30 +9,63 @@ import {
   TextInput,
 } from "react-native";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 export default function AddNoteScreen() {
   const router = useRouter();
+
+  const { isEdit, noteId } = useLocalSearchParams<{
+    isEdit?: string;
+    noteId?: string;
+  }>();
+  const editing = isEdit === "true";
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [count, setCount] = useState(0);
 
+  const note = useSelector((state: RootState) =>
+    state.notes.notes.find((n) => n.id === noteId)
+  );
+  useEffect(() => {
+    if (editing && note) {
+      setTitle(note.title);
+      setContent(note.content);
+    } else {
+      setTitle("");
+      setContent("");
+    }
+  }, [note]);
   const dispatch = useDispatch();
   const handleSaveNote = () => {
-    const newNote = {
-      id: Date.now.toString(),
-      title: title.trim(),
-      content: content.trim(),
-    };
-    dispatch(addNote(newNote));
-    setTitle("");
-    setContent("");
+    if (editing && noteId) {
+      const editedNote = {
+        id: noteId,
+        title: title.trim(),
+        content: content.trim(),
+      };
+      dispatch(editNote(editedNote));
+    } else {
+      const newNote = {
+        id: count.toString(),
+        title: title.trim(),
+        content: content.trim(),
+      };
+      dispatch(addNote(newNote));
+      setCount((count) => count + 1);
+      setTitle("");
+      setContent("");
+    }
     router.back();
   };
   return (
     <View>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back}>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <IconSymbol color="black" size={40} name="arrow.backward" />
       </TouchableOpacity>
-      <Text style={styles.header}>Add new Note</Text>
+      <Text style={styles.header}>
+        {editing ? "Edit Note" : "Add new Note"}
+      </Text>
       <TextInput
         style={styles.input}
         placeholder="Title"
@@ -46,7 +79,9 @@ export default function AddNoteScreen() {
         onChangeText={setContent}
       />
       <TouchableOpacity style={styles.saveButton} onPress={handleSaveNote}>
-        <Text style={styles.saveText}>Save Note</Text>
+        <Text style={styles.saveText}>
+          {editing ? "Update Note" : "Save Note"}
+        </Text>
       </TouchableOpacity>
     </View>
   );

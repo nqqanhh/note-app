@@ -34,7 +34,12 @@ export default function notepage() {
       <View style={styles.noteButtons}>
         <TouchableOpacity
           style={styles.editButton}
-          onPress={() => console.log("to edit screen")}
+          onPress={() =>
+            router.push({
+              pathname: "/(tabs)/adnotes",
+              params: { isEdit: "true", noteId: item.id },
+            })
+          }
         >
           {/* <IconSymbol color="white" name="arrow.backward" /> */}
           <Text style={styles.editText}>Edit</Text>
@@ -63,7 +68,12 @@ export default function notepage() {
       />
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => router.push("/(tabs)/adnotes")}
+        onPress={() =>
+          router.push({
+            pathname: "/(tabs)/adnotes",
+            params: { isEdit: "false" },
+          })
+        }
       >
         {/* <Text style={styles.editText}>add</Text> */}
         <IconSymbol name="plus" size={24} color="#fff" />
