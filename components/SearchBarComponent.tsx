@@ -26,6 +26,7 @@ const SearchBarComponent = () => {
         borderRadius: 5,
         margin: 10,
       }}
+      placeholderTextColor="#888"
     />
   );
 };

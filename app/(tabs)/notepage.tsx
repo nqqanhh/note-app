@@ -14,6 +14,7 @@ import { RootState } from "@/redux/store";
 import { deleteNote } from "@/redux/noteSlice";
 import HeaderComponent from "@/components/HeaderComponent";
 import SearchBarComponent from "@/components/SearchBarComponent";
+
 export default function notepage() {
   const dispatch = useDispatch();
   const router = useRouter();
@@ -32,11 +33,11 @@ export default function notepage() {
   const renderNote = ({
     item,
   }: {
-    item: { id: string; title: string; content: string };
+    item: { id: string; title: string; content: string; bgColor: string };
   }) => (
     <View>
       <TouchableOpacity
-        style={styles.noteItem}
+        style={[styles.noteItem, { backgroundColor: item.bgColor }]}
         onPress={() =>
           router.push({
             pathname: "/(tabs)/adnotes",
@@ -88,9 +89,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   noteItem: {
+    flex: 1,
+    justifyContent: "space-between",
+    flexDirection: "row",
+    alignSelf: "center",
+    width: "90%",
+    height: 110,
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
+    borderRadius: 10,
+    marginTop: 20,
   },
   noteTitle: {
     fontSize: 18,
@@ -135,10 +144,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 100,
     right: 20,
-    backgroundColor: "#007bff",
+    backgroundColor: "#252525",
     width: 56,
     height: 56,
     borderRadius: 28,
+    boxShadow: "",
     justifyContent: "center",
     alignItems: "center",
     elevation: 5,

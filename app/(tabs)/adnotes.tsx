@@ -16,6 +16,17 @@ import { addNote, editNote } from "@/redux/noteSlice";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 
 export default function AddNoteScreen() {
+  const COLORS = [
+    "#FD99FF",
+    "#FF9E9E",
+    "#91F48F",
+    "#FFF599",
+    "#9EFFFF",
+    "#B69CFF",
+  ];
+  function getRandomColor() {
+    return COLORS[Math.floor(Math.random() * COLORS.length)];
+  }
   const router = useRouter();
   //get params
   const { isEdit, noteId } = useLocalSearchParams<{
@@ -51,6 +62,7 @@ export default function AddNoteScreen() {
         id: noteId,
         title: title.trim(),
         content: content.trim(),
+        bgColor: note?.bgColor || getRandomColor(),
       };
       dispatch(editNote(editedNote));
     } else {
@@ -58,6 +70,7 @@ export default function AddNoteScreen() {
         id: count.toString(),
         title: title.trim(),
         content: content.trim(),
+        bgColor: getRandomColor(),
       };
       dispatch(addNote(newNote));
       setCount((count) => count + 1);
@@ -77,12 +90,14 @@ export default function AddNoteScreen() {
         placeholder="Title"
         value={title}
         onChangeText={setTitle}
+        placeholderTextColor="#888"
       />
       <TextInput
-        style={styles.input}
+        style={styles.contentInput}
         placeholder="Content"
         value={content}
         onChangeText={setContent}
+        placeholderTextColor="#888"
       />
       <TouchableOpacity style={styles.saveButton} onPress={handleSaveNote}>
         <Text style={styles.saveText}>
@@ -97,10 +112,13 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     paddingTop: 35,
+    color: "#000000ff",
     backgroundColor: "#fff",
   },
   backButton: {
-    marginTop: 30,
+    position: "absolute",
+    top: 55,
+    left: 10,
     alignSelf: "flex-start",
   },
   header: {
@@ -108,18 +126,18 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
+    marginTop: "15%",
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
-    fontSize: 16,
+    fontSize: 40,
   },
   contentInput: {
-    height: 120,
     textAlignVertical: "top",
+    padding: 12,
+    fontSize: 20,
   },
   saveButton: {
     backgroundColor: "#007bff",
