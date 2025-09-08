@@ -1,14 +1,37 @@
-import * as React from 'react';
-import { Searchbar } from 'react-native-paper';
-const SearchBarComponent=()=> {
+import * as React from "react";
+import { StyleSheet } from "react-native";
+import { Searchbar } from "react-native-paper";
+import { TextInput } from "react-native";
+import { useDispatch } from "react-redux";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { setSearchNote } from "@/redux/noteSlice";
+const SearchBarComponent = () => {
+  const dispatch = useDispatch();
+  const [searchQuery, setSearchQuery] = React.useState("");
+  // const insets = useSafeAreaInsets();
+
+  const onChangeSearch = (query: string) => {
+    setSearchQuery(query);
+    dispatch(setSearchNote(query));
+  };
   return (
-    
-    <Searchbar
-     placeholder='Search by keyword'
-     onChangeText={()=>console.log('opened search bar')}
-     value='askdask'
-     
+    <TextInput
+      placeholder="Search..."
+      value={searchQuery}
+      onChangeText={onChangeSearch}
+      style={{
+        padding: 10,
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 5,
+        margin: 10,
+      }}
     />
-  )
-}
+  );
+};
+const styles = StyleSheet.create({
+  container: {
+    marginTop: 30,
+  },
+});
 export default SearchBarComponent;
