@@ -1,21 +1,21 @@
-import { useDispatch, useSelector } from "react-redux";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import {
-  Text,
-  View,
-  TouchableOpacity,
-  StyleSheet,
-  TextInput,
   Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-import { RootState } from "@/redux/store";
 import { addNote, editNote } from "@/redux/noteSlice";
+import { RootState } from "@/redux/store";
 
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export default function AddNoteScreen() {
   const COLORS = [
@@ -29,87 +29,43 @@ export default function AddNoteScreen() {
   function getRandomColor() {
     return COLORS[Math.floor(Math.random() * COLORS.length)];
   }
-  //
-  const showConfirmationAlert = () => {
-    Alert.alert(
-      "Confirmation",
-      "Are you sure you want to proceed?",
-      [
-        {
-          text: "Discard",
-          onPress: showDiscardAlert,
-          style: "cancel",
-        },
-        {
-          text: "Save",
-          onPress: handleSaveNote,
-        },
-      ],
-      { cancelable: true }
-    );
-  };
 
-  const showDiscardAlert = () => {
-    Alert.alert(
-      "Confirmation",
-      "Are you sure you want to discard your changes?",
-      [
-        {
-          text: "Discard",
-          onPress: handleDiscard,
-          style: "cancel",
-        },
-        {
-          text: "Keep",
-          onPress: () => console.log("OK Pressed"),
-        },
-      ],
-      { cancelable: true }
-    );
-  };
   //
   const router = useRouter();
-  //get params
-  const { isEdit, noteId } = useLocalSearchParams<{
-    isEdit?: string;
-    noteId?: string;
-  }>();
-  const editing = isEdit === "true";
-
   //states
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [oldTitle, setOldTitle] = useState("");
-  const [oldContent, setOldContent] = useState("");
   const [count, setCount] = useState(0);
-  //find specific note (for Edit)
-  const note = useSelector((state: RootState) =>
-    state.notes.notes.find((n) => n.id === noteId)
-  );
-  //show title and content (if isEdit)
+  const dispatch = useDispatch();
+  const { id } = useLocalSearchParams();
+  const { notes } = useSelector((state: RootState) => state.notes);
+  const isEditing = !!id;
+  const existingNote = isEditing ? notes.find((note) => note.id === id) : null;
+
   useEffect(() => {
-    if (editing && note) {
-      setTitle(note.title);
-      setOldTitle(note.title);
-      setContent(note.content);
-      setOldContent(note.content);
+    if (isEditing && existingNote) {
+      setTitle(existingNote.title);
+      setContent(existingNote.content);
     } else {
       setTitle("");
       setContent("");
     }
-  }, [note]);
-  //
-  const dispatch = useDispatch();
-  //Note saving handler
+  }, [isEditing, existingNote]);
+
   const handleSaveNote = () => {
-    if (editing && noteId) {
-      const editedNote = {
-        id: noteId,
+    if (title.trim() === "" || content.trim() === "") {
+      Alert.alert("Error", "Please fill in both title and content.");
+      return;
+    }
+
+    if (isEditing && existingNote) {
+      const updatedNote = {
+        id: existingNote.id,
         title: title.trim(),
         content: content.trim(),
-        bgColor: note?.bgColor || getRandomColor(),
+        bgColor: existingNote?.bgColor || getRandomColor(),
       };
-      dispatch(editNote(editedNote));
+      dispatch(editNote(updatedNote));
     } else {
       const newNote = {
         id: count.toString(),
@@ -119,22 +75,70 @@ export default function AddNoteScreen() {
       };
       dispatch(addNote(newNote));
       setCount((count) => count + 1);
-      setTitle("");
-      setContent("");
     }
+
+    setTitle("");
+    setContent("");
     router.back();
   };
+  //check if anything has changed
+  const hasChange = () => {
+    if (!isEditing) return title.trim() !== "" || content.trim() !== "";
+    return title !== existingNote?.title || content !== existingNote?.content;
+  };
+
+  const isEmpty = () => {
+    return title.trim() === "" || content.trim() === "";
+  };
   const handleDiscard = () => {
-    setTitle(oldTitle);
-    setContent(oldContent);
-    router.back();
+    if (!isEditing) {
+      setTitle(""), setContent("");
+    }
+    router.replace("/(tabs)/notepage");
+    router.reload;
+  };
+  const handleBack = () => {
+    if (hasChange()) {
+      Alert.alert(
+        "Discard changes",
+        "You have unsaved changes. Are you sure you want to discard them?",
+        [
+          { text: "Keep", style: "cancel" },
+          {
+            text: "Discard",
+            style: "destructive",
+            onPress: handleDiscard,
+          },
+        ]
+      );
+    } else {
+      router.back();
+    }
+  };
+  const handleSave = () => {
+    if (hasChange()) {
+      Alert.alert("Save changes", "Are you sure you want to save ?", [
+        {
+          text: "Save",
+          style: "cancel",
+          onPress: handleSaveNote,
+        },
+        {
+          text: "No",
+          style: "destructive",
+          onPress: () => console.log("cancelled saving"),
+        },
+      ]);
+    } else {
+      router.back();
+    }
   };
   return (
     <View>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <IconSymbol color="black" size={40} name="arrow.backward" />
+      <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+        <Ionicons name="arrow-back-sharp" size={24} color="white" />
       </TouchableOpacity>
-      <Text style={styles.header}>{editing ? "" : "Add new Note"}</Text>
+      <Text style={styles.header}>{isEditing ? "" : "Add new Note"}</Text>
       <TextInput
         style={styles.input}
         placeholder="Title"
@@ -149,35 +153,34 @@ export default function AddNoteScreen() {
         onChangeText={setContent}
         placeholderTextColor="#888"
       />
-      <TouchableOpacity
-        style={styles.saveButton}
-        onPress={showConfirmationAlert}
-      >
-        <AntDesign name="save" size={24} color="white" />{" "}
-      </TouchableOpacity>
+      {isEmpty() ? (
+        <TouchableOpacity style={styles.saveButtonDisabled} disabled>
+          <AntDesign name="save" size={24} color="black" />
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <AntDesign name="save" size={24} color="white" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    paddingTop: 35,
-    color: "#000000ff",
-    backgroundColor: "#fff",
-  },
   backButton: {
     position: "absolute",
-    top: 55,
+    padding: 12,
+    top: 70,
     left: 10,
     alignSelf: "flex-start",
+    backgroundColor: "#3B3B3B",
+    borderRadius: 8,
   },
   header: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
-    marginTop: "15%",
+    marginTop: "20%",
   },
   input: {
     borderRadius: 8,
@@ -192,16 +195,20 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     position: "absolute",
-    top: 55,
+    top: 70,
     right: 12,
     backgroundColor: "#3B3B3B",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
   },
-  saveText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
+  saveButtonDisabled: {
+    position: "absolute",
+    top: 70,
+    right: 12,
+    backgroundColor: "#ffffffff",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
   },
 });

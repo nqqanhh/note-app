@@ -1,19 +1,20 @@
-import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "expo-router";
+import { useDispatch, useSelector } from "react-redux";
 
 import {
-  Text,
-  View,
-  TouchableOpacity,
-  StyleSheet,
   FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-import { IconSymbol } from "@/components/ui/IconSymbol";
-import { RootState } from "@/redux/store";
-import { deleteNote } from "@/redux/noteSlice";
 import HeaderComponent from "@/components/HeaderComponent";
 import SearchBarComponent from "@/components/SearchBarComponent";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { deleteNote } from "@/redux/noteSlice";
+import { RootState } from "@/redux/store";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 export default function notepage() {
   const dispatch = useDispatch();
@@ -41,7 +42,7 @@ export default function notepage() {
         onPress={() =>
           router.push({
             pathname: "/(tabs)/adnotes",
-            params: { isEdit: "true", noteId: item.id },
+            params: { id: item.id },
           })
         }
       >
@@ -51,7 +52,7 @@ export default function notepage() {
             style={styles.deleteButton}
             onPress={() => handleDeleteNote(item.id)}
           >
-            <Text style={styles.deleteText}>delete</Text>
+            <FontAwesome name="trash-o" size={24} color="black" />{" "}
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -126,8 +127,10 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: "#ff4444",
-    padding: 8,
-    borderRadius: 4,
+    // backgroundColor: "#3B3B3B",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
     alignSelf: "flex-start",
   },
   deleteText: {

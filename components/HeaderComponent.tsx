@@ -18,7 +18,7 @@ const HeaderComponent = () => {
     <>
       <Appbar.Header>
         <Appbar.Content title="Notes" style={{ alignItems: "flex-start" }} />
-        <Appbar.Action icon="magnify" onPress={() => setIsModalVisible(true)} />
+        {/* <Appbar.Action icon="magnify" onPress={() => setIsModalVisible(true)} /> */}
         <Appbar.Action
           icon="information"
           onPress={() => console.log("pressed info")}
@@ -28,15 +28,16 @@ const HeaderComponent = () => {
           onPress={() => router.push("/(tabs)/adnotes")}
         /> */}
       </Appbar.Header>
-      <Modal
+      {/* <Modal
         visible={isModalVisible}
         onRequestClose={handleCloseModal}
         animationType="slide"
+        style={{ paddingTop: "10%" }}
       >
         <View style={styles.searchContainer}>
           <SearchBarComponent />
         </View>
-      </Modal>
+      </Modal> */}
     </>
   );
 };
